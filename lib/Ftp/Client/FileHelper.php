@@ -1,7 +1,71 @@
 <?php
 
-class Ftp_Proxy_Helper
+class Ftp_Client_FileHelper
 {
+	public static function checkRawFormat($sRawFileInfo)
+	{
+		// Match for: -rw-rw-rw-   1 owner  group       1187 Jul 29  2009 filename.ext
+		// Match for: drwxr-xr-x   1 owner  group       1187 Jul 29  08:00 dirname
+
+		$aErr = array();
+		$aTmp = preg_split('([\s]+)', $sRawFileInfo);
+
+		if (!preg_match('(^[d\-]([r\-][w\-][x\-]){3}$)', $aTmp[0]))
+			$aErr[] = 'Permissions not found in ' . $aTmp[0];
+		if (!preg_match('(^[A-Za-z0-9]+$)', $aTmp[2]))
+			$aErr[] = 'Owner not found in ' . $aTmp[2];
+		if (!preg_match('(^[A-Za-z0-9]+$)', $aTmp[3]))
+			$aErr[] = 'Group not found in ' . $aTmp[3];
+		if (!is_numeric($aTmp[4]))
+			$aErr[] = 'Size not found in ' . $aTmp[4];
+		if (false === self::getTimestamp($aTmp[6], $aTmp[5], $aTmp[7]))
+			$aErr[] = 'Could not generate timestamp from ' . $aTmp[6] . ' ' . $aTmp[5] . ' ' . $aTmp[7];
+		if (!strlen($aTmp[8]) > 0)
+			$aErr[] = 'Filename not found in ' . $aTmp[8];
+
+		if (count($aErr) > 0)
+		{
+			foreach($aErr as $sMsg)
+			{
+				error_log(__CLASS__ . '::' . __FUNCTION__ . ' - ' . $sMsg);
+			} // foreach
+			return false;
+		} // if
+		else
+		{
+			return true;
+		} // else
+
+		// return (bool) preg_match($sRawPattern, $sRawFileInfo);
+
+	} // function
+
+	public static function getTimestamp($sDay, $sMonth, $sYear)
+	{
+		$sTime = '';
+		if(preg_match('(\d\d:\d\d)', $sYear))
+		{
+			$sTime = $sYear;
+			$sYear = date('Y');
+		}
+		return strtotime($sDay . ' ' . $sMonth . ' ' . $sYear);
+	} // function
+
+	public static function getChmod($sRawChmod)
+	{
+		$aTrans = array('-' => '0', 'r' => '4', 'w' => '2', 'x' => '1');
+		$sChmod = substr(strtr($sRawChmod, $aTrans), 1);
+		$aChmod = str_split($sChmod, 3);
+		return array_sum(str_split($aChmod[0])) . array_sum(str_split($aChmod[1])) . array_sum(str_split($aChmod[2]));
+	} // function
+
+	public static function getSize($sRawSize)
+	{
+		$aSymbol = array('B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
+		$exp = floor( log((int)$sRawSize) / log(1024) );
+		return sprintf( '%.2f ' . $aSymbol[ $exp ], ((int)$sRawSize / pow(1024, floor($exp))) );
+	} // function
+
 	public static function guessMimetype($sFilename)
 	{
 		$sFileExtension = strrchr(basename($sFilename), '.');
