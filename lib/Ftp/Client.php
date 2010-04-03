@@ -12,33 +12,50 @@ class Ftp_Client
 
 	protected $bConnected = false;
 
-	public function __construct(Ftp_Client_Config $oConfig = null)
+	public function __construct($mConfig = array())
 	{
-		if (null === $oConfig)
-			$this->oConfig = new Ftp_Client_Config();
+		if ($mConfig instanceof Ftp_Client_Config)
+		{
+			$this->oConfig = $mConfig;
+		} // else
+		elseif (is_array($mConfig))
+		{
+			$this->oConfig = new Ftp_Client_Config($mConfig);
+		} // elseif
 		else
-			$this->oConfig = $oConfig;
+		{
+			throw new Exception('Parameter of Ftp_Client::__construct has to be either an array or an instance of Ftp_Client_Config');
+		} // else
 	} // function
 
 	public function open($sHost)
 	{
-		// @todo implement ssl-ftp connections
-		$this->rConn = ftp_connect($sHost, $this->oConfig->port, $this->oConfig->timeout);
+		if (true === $this->oConfig->useSSL)
+		{
+			$this->rConn = ftp_ssl_connect($sHost, $this->oConfig->port, $this->oConfig->timeout);
+		} // if
+		else
+		{
+			$this->rConn = ftp_connect($sHost, $this->oConfig->port, $this->oConfig->timeout);
+		} // else
 
 		if (false === $this->rConn)
+		{
 			throw new Exception('Could not connect to host ' . $sHost);
-
+		} // if
 		return $this;
 	} // function
 
 	public function login($sUsername = '', $sPassword = '')
 	{
 		if (!@ftp_login($this->rConn, $sUsername, $sPassword))
-			throw new Exception('Could not login user ' . $sUsername);
-
-		if (true === $this->oConfig->pasv)
 		{
-			$this->pasv(true);
+			throw new Exception('Could not login user ' . $sUsername);
+		} // if
+
+		if (true === $this->oConfig->usePasv)
+		{
+			$this->pasv($this->oConfig->usePasv);
 		} // if
 
 		return $this;
@@ -75,7 +92,7 @@ class Ftp_Client
 			{
 				foreach(ftp_rawlist($this->rConn, $this->pwd()) as $sRawFileInfo)
 				{
-					if ((true === $bCheckFormat ? true === Ftp_Client_FileHelper::checkRawFormat($sRawFileInfo) :true))
+					if ((true === $bCheckFormat ? (true === Ftp_Client_FileHelper::checkRawFormat($sRawFileInfo)) : true))
 					{
 						$oFile = new Ftp_Client_File_Remote();
 						$aTmp = preg_split('([\s]+)', $sRawFileInfo, 9);
