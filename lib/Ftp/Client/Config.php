@@ -2,6 +2,10 @@
 
 class Ftp_Client_Config
 {
+	const MODE_BINARY = FTP_BINARY;
+
+	const MODE_ASCII = FTP_ASCII;
+
 	public $port;
 
 	public $timeout;
@@ -18,6 +22,6 @@ class Ftp_Client_Config
 		$this->timeout = 90;
 		$this->pasv = false;
 		$this->ssl = false;
-		$this->mode = FTP_BINARY;
+		$this->mode = self::MODE_BINARY;
 	}
 } // class
