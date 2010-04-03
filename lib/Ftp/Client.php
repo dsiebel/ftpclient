@@ -1,6 +1,8 @@
 <?php
 
 require_once (dirname(__FILE__) . '/Client/Config.php');
+require_once (dirname(__FILE__) . '/Client/File/Remote.php');
+require_once (dirname(__FILE__) . '/Client/FileHelper.php');
 
 class Ftp_Client
 {
@@ -60,20 +62,41 @@ class Ftp_Client
 		return false;
 	} // function
 
-	public function dir($bExtend = false)
+	public function dir($bExtend = true, $bCheckFormat = true)
 	{
 		if (false !== $this->rConn)
 		{
 			$aDirList = array();
-			if (true === $bExtend)
+			if (false === $bExtend)
 			{
-				$aDirList = ftp_rawlist($this->rConn, $this->pwd());
+				$aDirList = ftp_nlist($this->rConn, $this->pwd());
 			} // if
 			else
 			{
-				$aDirList = ftp_nlist($this->rConn, $this->pwd());
-			} // else
+				foreach(ftp_rawlist($this->rConn, $this->pwd()) as $sRawFileInfo)
+				{
+					if ((true === $bCheckFormat ? true === Ftp_Client_FileHelper::checkRawFormat($sRawFileInfo) :true))
+					{
+						$oFile = new Ftp_Client_File_Remote();
+						$aTmp = preg_split('([\s]+)', $sRawFileInfo, 9);
 
+						$oFile->setIsDir((bool) $aTmp[0]{0} == 'd');
+						$oFile->setChmodRaw($aTmp[0]);
+						$oFile->setChmod(Ftp_Client_FileHelper::getChmod($aTmp[0]));
+						$oFile->setOwner($aTmp[2]);
+						$oFile->setGroup($aTmp[3]);
+						$oFile->setSizeRaw($aTmp[4]);
+						$oFile->setSize(Ftp_Client_FileHelper::getSize($aTmp[4]));
+						$oFile->setDateRaw($aTmp[6] . ' ' . $aTmp[5] . ' ' . $aTmp[7]);
+						$oFile->setTimestamp(Ftp_Client_FileHelper::getTimestamp($aTmp[6], $aTmp[5], $aTmp[7]));
+						$oFile->setName($aTmp[8]);
+						$oFile->setMime(Ftp_Client_FileHelper::guessMimeType($aTmp[8]));
+						$oFile->setRaw($sRawFileInfo);
+
+						$aDirList[] = $oFile;
+					} // if
+				} // foreach
+			} // else
 			return $aDirList;
 		} // if
 		return false;
@@ -102,6 +125,24 @@ class Ftp_Client
 		if (false !== $this->rConn)
 		{
 			return ftp_fget($this->rConn, $rStream, $sFilenameRemote, $sTransferMode);
+		} // if
+		return false;
+	} // function
+
+	public function put($sFilenameRemote, $sFilenameLocal, $sTransferMode = Ftp_Client_Config::MODE_BINARY)
+	{
+		if (false !== $this->rConn)
+		{
+			return ftp_put($this->rConn, $sFilenameRemote, $sFilenameLocal, $sTransferMode);
+		} // if
+		return false;
+	} // function
+
+	public function mkdir($sDirectory)
+	{
+		if (false !== $this->rConn)
+		{
+			return ftp_mkdir($this->rConn, $sDirectory);
 		} // if
 		return false;
 	} // function
