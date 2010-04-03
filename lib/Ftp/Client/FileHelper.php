@@ -1,7 +1,16 @@
 <?php
-
+/**
+ * Static file helper class.
+ * Provides various file related methods.
+ * @author Dominik Siebel <ftpclient@dsiebel.de>
+ */
 class Ftp_Client_FileHelper
 {
+	/**
+	 * Check the raw file string for validity
+	 * @param  string $sRawFileInfo
+	 * @return bool
+	 */
 	public static function checkRawFormat($sRawFileInfo)
 	{
 		// Match for: -rw-rw-rw-   1 owner  group       1187 Jul 29  2009 filename.ext
@@ -10,16 +19,22 @@ class Ftp_Client_FileHelper
 		$aErr = array();
 		$aTmp = preg_split('([\s]+)', $sRawFileInfo);
 
+		// check permissions string
 		if (!preg_match('(^[d\-]([r\-][w\-][x\-]){3}$)', $aTmp[0]))
 			$aErr[] = 'Permissions not found in ' . $aTmp[0];
+		// check file owner
 		if (!preg_match('(^[A-Za-z0-9]+$)', $aTmp[2]))
 			$aErr[] = 'Owner not found in ' . $aTmp[2];
+		// check file group
 		if (!preg_match('(^[A-Za-z0-9]+$)', $aTmp[3]))
 			$aErr[] = 'Group not found in ' . $aTmp[3];
+		// check file size
 		if (!is_numeric($aTmp[4]))
 			$aErr[] = 'Size not found in ' . $aTmp[4];
+		// check file date
 		if (false === self::getTimestamp($aTmp[6], $aTmp[5], $aTmp[7]))
 			$aErr[] = 'Could not generate timestamp from ' . $aTmp[6] . ' ' . $aTmp[5] . ' ' . $aTmp[7];
+		// check file name
 		if (!strlen($aTmp[8]) > 0)
 			$aErr[] = 'Filename not found in ' . $aTmp[8];
 
@@ -35,11 +50,16 @@ class Ftp_Client_FileHelper
 		{
 			return true;
 		} // else
-
-		// return (bool) preg_match($sRawPattern, $sRawFileInfo);
-
 	} // function
 
+	/**
+	 * Generates a timestamp from given input
+	 * e.g. 11 Aug 2009 => 1249941600
+	 * @param  string $sDay
+	 * @param  string $sMonth
+	 * @param  string $sYear
+	 * @return int
+	 */
 	public static function getTimestamp($sDay, $sMonth, $sYear)
 	{
 		$sTime = '';
@@ -51,6 +71,12 @@ class Ftp_Client_FileHelper
 		return strtotime($sDay . ' ' . $sMonth . ' ' . $sYear);
 	} // function
 
+	/**
+	 * Gets integer value from file permission string
+	 * e.g. -rw-rw-rw- => 666
+	 * @param  string $sRawChmod
+	 * @return int
+	 */
 	public static function getChmod($sRawChmod)
 	{
 		$aTrans = array('-' => '0', 'r' => '4', 'w' => '2', 'x' => '1');
@@ -59,16 +85,31 @@ class Ftp_Client_FileHelper
 		return array_sum(str_split($aChmod[0])) . array_sum(str_split($aChmod[1])) . array_sum(str_split($aChmod[2]));
 	} // function
 
-	public static function getSize($sRawSize)
+	/**
+	 * Parse file size in byte to human readable format
+	 * @param  string $sRawSize
+	 * @return string
+	 */
+	public static function getSize($iRawSize)
 	{
 		$aSymbol = array('B', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB');
-		$exp = floor( log((int)$sRawSize) / log(1024) );
-		return sprintf( '%.2f ' . $aSymbol[ $exp ], ((int)$sRawSize / pow(1024, floor($exp))) );
+		$exp = floor( log((int)$iRawSize) / log(1024) );
+		return sprintf( '%.2f ' . $aSymbol[ $exp ], ((int)$iRawSize / pow(1024, floor($exp))) );
 	} // function
 
+	/**
+	 * Guess file's mimetype by it's extension.
+	 * Default is application/octet-stream
+	 * @param  string $sFilename
+	 * @return string
+	 */
 	public static function guessMimetype($sFilename)
 	{
 		$sFileExtension = strrchr(basename($sFilename), '.');
+
+		// don't switch if extension is empty
+		if ($sFileExtension == '')
+			return 'application/octet-stream';
 
 		switch ($sFileExtension) {
 			case '.zip': $sMimeType = 'application/zip'; break;

@@ -1,17 +1,36 @@
 <?php
-
+/**
+ * Ftp_Client class
+ * Delegate ftp-commands to the remote host
+ * @author Dominik Siebel <ftpclient@dsiebel.de>
+ */
 require_once (dirname(__FILE__) . '/Client/Config.php');
 require_once (dirname(__FILE__) . '/Client/File/Remote.php');
 require_once (dirname(__FILE__) . '/Client/FileHelper.php');
-
+/**
+ * Ftp_Client class
+ * Delegate ftp-commands to the remote host
+ * @author Dominik Siebel <ftpclient@dsiebel.de>
+ */
 class Ftp_Client
 {
+	/**
+	 * Client configuration
+	 * @var Ftp_Client_Config
+	 */
 	protected $oConfig = null;
 
+	/**
+	 * Ftp connection resource
+	 * @var resource
+	 */
 	protected $rConn = false;
 
-	protected $bConnected = false;
-
+	/**
+	 * Constructor.
+	 * Sets the Client's configuration
+	 * @param mixed $mConfig
+	 */
 	public function __construct($mConfig = array())
 	{
 		if ($mConfig instanceof Ftp_Client_Config)
@@ -28,6 +47,12 @@ class Ftp_Client
 		} // else
 	} // function
 
+	/**
+	 * Open a connection to the specified remote host.
+	 * Implements a fluent interface.
+	 * @param  string $sHost
+	 * @return Ftp_Client
+	 */
 	public function open($sHost)
 	{
 		if (true === $this->oConfig->useSSL)
@@ -46,6 +71,13 @@ class Ftp_Client
 		return $this;
 	} // function
 
+	/**
+	 * Login the specified user.
+	 * Implements a fluent interface.
+	 * @param  string $sUsername
+	 * @param  string $sPassword
+	 * @return Ftp_Client
+	 */
 	public function login($sUsername = '', $sPassword = '')
 	{
 		if (!@ftp_login($this->rConn, $sUsername, $sPassword))
@@ -57,10 +89,15 @@ class Ftp_Client
 		{
 			$this->pasv($this->oConfig->usePasv);
 		} // if
-
 		return $this;
 	} // function
 
+	/**
+	 * Enable or disable passive mode.
+	 * Implements a fluent interface.
+	 * @param bool $bEnable
+	 * @return Ftp_Client
+	 */
 	public function pasv($bEnable = true)
 	{
 		if (false !== $this->rConn)
@@ -70,6 +107,10 @@ class Ftp_Client
 		return $this;
 	} // function
 
+	/**
+	 * Return current working dir on the remote host
+	 * @return mixed
+	 */
 	public function pwd()
 	{
 		if (false !== $this->rConn)
@@ -79,6 +120,12 @@ class Ftp_Client
 		return false;
 	} // function
 
+	/**
+	 * Return a filelisting of the curent remote directory.
+	 * @param  bool $bExtend
+	 * @param  bool $bCheckFormat
+	 * @return array[Ftp_Client_File_Remote]
+	 */
 	public function dir($bExtend = true, $bCheckFormat = true)
 	{
 		if (false !== $this->rConn)
@@ -119,6 +166,12 @@ class Ftp_Client
 		return false;
 	} // function
 
+	/**
+	 * Change current directory.
+	 * Implements a fluent interface.
+	 * @param  string $sDirectory new directory
+	 * @return Ftp_Client
+	 */
 	public function chdir($sDirectory)
 	{
 		if (false !== $this->rConn)
@@ -128,33 +181,60 @@ class Ftp_Client
 		return $this;
 	} // function
 
-	public function get($sFilenameRemote, $sFilenameLocal, $sTransferMode = Ftp_Client_Config::MODE_BINARY)
+	/**
+	 * Download a remote file.
+	 * Implements a fluent interface.
+	 * @param  string $sFilenameRemote
+	 * @param  string $sFilenameLocal
+	 * @param  int    $iTransferMode
+	 * @return Ftp_Client
+	 */
+	public function get($sFilenameRemote, $sFilenameLocal, $iTransferMode = Ftp_Client_Config::MODE_BINARY)
 	{
 		if (false !== $this->rConn)
 		{
-			ftp_get($this->rConn, $sFilenameLocal, $sFilenameRemote, $sTransferMode);
+			ftp_get($this->rConn, $sFilenameLocal, $sFilenameRemote, $iTransferMode);
 		} // if
 		return $this;
 	} // function
 
-	public function fget($sFilenameRemote, $rStream, $sTransferMode = Ftp_Client_Config::MODE_BINARY)
+	/**
+	 * Get a remote file as file stream
+	 * @param  string   $sFilenameRemote
+	 * @param  resource $rStream
+	 * @param  int      $iTransferMode
+	 * @return bool
+	 */
+	public function fget($sFilenameRemote, $rStream, $iTransferMode = Ftp_Client_Config::MODE_BINARY)
 	{
 		if (false !== $this->rConn)
 		{
-			return ftp_fget($this->rConn, $rStream, $sFilenameRemote, $sTransferMode);
+			return ftp_fget($this->rConn, $rStream, $sFilenameRemote, $iTransferMode);
 		} // if
 		return false;
 	} // function
 
-	public function put($sFilenameRemote, $sFilenameLocal, $sTransferMode = Ftp_Client_Config::MODE_BINARY)
+	/**
+	 * Upload a local file to the remote host
+	 * @param  string $sFilenameRemote
+	 * @param  string $sFilenameLocal
+	 * @param  int    $iTransferMode
+	 * @return bool
+	 */
+	public function put($sFilenameRemote, $sFilenameLocal, $iTransferMode = Ftp_Client_Config::MODE_BINARY)
 	{
 		if (false !== $this->rConn)
 		{
-			return ftp_put($this->rConn, $sFilenameRemote, $sFilenameLocal, $sTransferMode);
+			return ftp_put($this->rConn, $sFilenameRemote, $sFilenameLocal, $iTransferMode);
 		} // if
 		return false;
 	} // function
 
+	/**
+	 * Create a new directory
+	 * @param  string $sDirectory
+	 * @return bool
+	 */
 	public function mkdir($sDirectory)
 	{
 		if (false !== $this->rConn)
@@ -164,6 +244,11 @@ class Ftp_Client
 		return false;
 	} // function
 
+	/**
+	 * Return the file size
+	 * @param  string $sFilenameRemote
+	 * @return mixed
+	 */
 	public function size($sFilenameRemote)
 	{
 		if (false !== $this->rConn)
@@ -173,6 +258,10 @@ class Ftp_Client
 		return false;
 	} // function
 
+	/**
+	 * Close current connection to the remote host.
+	 * @return bool
+	 */
 	public function close()
 	{
 		if (false !== $this->rConn)
@@ -184,6 +273,11 @@ class Ftp_Client
 		return false;
 	} // function
 
+	/**
+	 * Desctructor.
+	 * Close the current remote host connection on shutdown.
+	 * @retrn void
+	 */
 	public function __destruct()
 	{
 		$this->close();
