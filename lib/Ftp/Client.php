@@ -174,11 +174,12 @@ class Ftp_Client
 	 */
 	public function chdir($sDirectory)
 	{
+        $result = false;
 		if (false !== $this->rConn)
 		{
-			ftp_chdir($this->rConn, $sDirectory);
+			$result |= ftp_chdir($this->rConn, $sDirectory);
 		} // if
-		return $this;
+		return $result;
 	} // function
 
 	/**
