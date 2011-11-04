@@ -55,7 +55,7 @@ class Ftp_Client
 	 */
 	public function open($sHost)
 	{
-		if (true === $this->oConfig->useSSL)
+		if (true === $this->oConfig->ssl)
 		{
 			$this->rConn = ftp_ssl_connect($sHost, $this->oConfig->port, $this->oConfig->timeout);
 		} // if
@@ -85,9 +85,9 @@ class Ftp_Client
 			throw new Exception('Could not login user ' . $sUsername);
 		} // if
 
-		if (true === $this->oConfig->usePasv)
+		if (true === $this->oConfig->pasv)
 		{
-			$this->pasv($this->oConfig->usePasv);
+			$this->pasv($this->oConfig->pasv);
 		} // if
 		return $this;
 	} // function
@@ -174,11 +174,12 @@ class Ftp_Client
 	 */
 	public function chdir($sDirectory)
 	{
+        $result = false;
 		if (false !== $this->rConn)
 		{
-			ftp_chdir($this->rConn, $sDirectory);
+			$result |= ftp_chdir($this->rConn, $sDirectory);
 		} // if
-		return $this;
+		return $result;
 	} // function
 
 	/**
