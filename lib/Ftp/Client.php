@@ -150,7 +150,8 @@ class Ftp_Client
 						$oFile->setOwner($aTmp[2]);
 						$oFile->setGroup($aTmp[3]);
 						$oFile->setSizeRaw($aTmp[4]);
-						$oFile->setSize(Ftp_Client_FileHelper::getSize($aTmp[4]));
+						if (!$oFile->getIsDir())
+							$oFile->setSize(Ftp_Client_FileHelper::getSize($aTmp[4]));
 						$oFile->setDateRaw($aTmp[6] . ' ' . $aTmp[5] . ' ' . $aTmp[7]);
 						$oFile->setTimestamp(Ftp_Client_FileHelper::getTimestamp($aTmp[6], $aTmp[5], $aTmp[7]));
 						$oFile->setName($aTmp[8]);
