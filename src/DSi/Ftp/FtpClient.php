@@ -14,6 +14,9 @@ namespace DSi\Ftp;
 use DSi\Ftp\Client\File\FtpClientRemoteFile;
 use DSi\Ftp\Client\FtpClientConfig;
 use DSi\Ftp\Client\FtpClientFileHelper;
+use DSi\Ftp\Exception\FtpClientConnectException;
+use DSi\Ftp\Exception\FtpClientException;
+use DSi\Ftp\Exception\FtpClientLoginException;
 
 class FtpClient {
     /**
@@ -41,8 +44,7 @@ class FtpClient {
         } elseif (is_array($config)) {
             $this->config = new FtpClientConfig($config);
         } else {
-            // TODO specific Exception
-            throw new \Exception(
+            throw new \InvalidArgumentException(
                 'Argument 1 passed to FtpClient::__construct must be either array or instance of FtpClientConfig'
             );
         }
@@ -53,7 +55,7 @@ class FtpClient {
      * Implements a fluent interface.
      *
      * @param  string $hostname
-     * @throws \Exception if connection to host failed
+     * @throws FtpClientConnectException
      * @return FtpClient
      */
     public function open($hostname) {
@@ -64,8 +66,7 @@ class FtpClient {
         }
 
         if (false === $this->connection) {
-            // TODO specific Exception
-            throw new \Exception('Could not connect to host ' . $hostname);
+            throw new FtpClientConnectException('Could not connect to host ' . $hostname);
         }
         return $this;
     }
@@ -76,13 +77,12 @@ class FtpClient {
      *
      * @param string $user (default: '')
      * @param string $password (default: '')
-     * @throws \Exception if user could not be logged in
+     * @throws FtpClientLoginException if user could not be logged in
      * @return FtpClient
      */
     public function login($user = '', $password = '') {
         if (!@ftp_login($this->connection, $user, $password)) {
-            // TODO specific Exception
-            throw new \Exception('Could not login user ' . $user);
+            throw new FtpClientLoginException('Could not login user ' . $user);
         }
 
         if (true === $this->config->usePassive) {
@@ -138,8 +138,7 @@ class FtpClient {
                     try {
                         FtpClientFileHelper::checkRawFormat($rawFileInfo);
                     } catch(\InvalidArgumentException $e) {
-                        // TODO specific Exception
-                        throw new \Exception($e);
+                        throw new FtpClientException('Could not list directory contents with format check', 0, $e);
                     }
                 }
 
