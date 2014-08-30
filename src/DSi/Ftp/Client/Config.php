@@ -3,8 +3,6 @@
  * Config container class for FtpClient.
  * This container is read-only and can only be set via it's constructor.
  *
- * TODO refactor magics
- *
  * @author Dominik Siebel <code@dsiebel.de>
  * @since 2014-08-30
  */

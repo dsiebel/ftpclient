@@ -56,8 +56,6 @@ class FtpClientFileHelper {
      * Generates a timestamp from given input.
      * e.g. 11 Aug 2009 => 1249941600
      *
-     * TODO refactor
-     *
      * @param  string $year
      * @param  string $month
      * @param  string $day
