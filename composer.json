@@ -1,0 +1,15 @@
+{
+    "name": "dsiebel/ftpclient",
+    "description": "PHP FTP Client library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Dominik Siebel",
+            "email": "code@dsiebel.de"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+
+    }
+}
