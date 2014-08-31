@@ -1,16 +1,19 @@
 <?php
+
 /**
- * LoginException.
+ * This file is part of the FtpClient library.
  *
- * PHP version 5.4+
+ * (c) Dominik Siebel <code@dsiebel.de>
  *
- * @since 2014-08-30
- * @author Dominik Siebel <code@dsiebel.de>
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the LICENSE file.
  */
 
 namespace DSi\Ftp\Exception;
 
-
+/**
+ * LoginException.
+ */
 class FtpClientLoginException extends FtpClientException {
 
 }

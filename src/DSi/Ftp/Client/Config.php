@@ -1,13 +1,20 @@
 <?php
+
+/**
+ * This file is part of the FtpClient library.
+ *
+ * (c) Dominik Siebel <code@dsiebel.de>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the LICENSE file.
+ */
+
+namespace DSi\Ftp\Client;
+
 /**
  * Config container class for FtpClient.
  * This container is read-only and can only be set via it's constructor.
- *
- * @author Dominik Siebel <code@dsiebel.de>
- * @since 2014-08-30
  */
-namespace DSi\Ftp\Client;
-
 class FtpClientConfig {
     /**
      * Binary transfer mode

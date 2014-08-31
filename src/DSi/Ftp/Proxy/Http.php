@@ -1,16 +1,23 @@
 <?php
+
 /**
- * Http proxy class for Ftp_Client.
- * Provides functionality for a web frontend.
+ * This file is part of the FtpClient library.
  *
- * @author Dominik Siebel <code@dsiebel.de>
- * @since 2014-08-30
+ * (c) Dominik Siebel <code@dsiebel.de>
+ *
+ * This source file is subject to the MIT license that is bundled
+ * with this source code in the LICENSE file.
  */
+
 namespace DSi\Ftp\Proxy;
 
 use DSi\Ftp\Client\FtpClientFileHelper;
 use DSi\Ftp\FtpClient;
 
+/**
+ * Http proxy class for Ftp_Client.
+ * Provides functionality for a web frontend.
+ */
 class FtpProxyHttp {
     /**
      * Instance of FtpClient
